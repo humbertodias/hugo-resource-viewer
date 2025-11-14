@@ -18,9 +18,12 @@ endif()
 
 # Find Qt packages conditionally
 if(QT_WASM_BUILD)
-    find_package(Qt6 REQUIRED COMPONENTS Widgets)
+    find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets)
+    find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 else()
-    find_package(Qt6 REQUIRED COMPONENTS Widgets Multimedia)
+    find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets Multimedia)
+    find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Multimedia)
+
 endif()
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
