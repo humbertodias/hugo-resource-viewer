@@ -1,0 +1,83 @@
+name: Build & Deploy (WASM)
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+env:
+  APP_NAME: "hugo-resource-viewer"
+  QT_VERSION: "6.9.0"
+  EMSCRIPTEN_VERSION: "3.1.70"
+  BUILD_DIR: "build"
+  BUILD_TYPE: "Release"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v5
+
+    - name: Setup emsdk
+      uses: mymindstorm/setup-emsdk@v14
+      with:
+        version: ${{ env.EMSCRIPTEN_VERSION }}
+    - name: Verify
+      run: emcc -v        
+
+    - name: Install Qt for WebAssembly
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: ${{ env.QT_VERSION }}
+        host: all_os
+        target: wasm
+        arch: wasm_singlethread
+
+    - name: Configure and Build (Emscripten)
+      run: |
+
+        cmake -B${{ env.BUILD_DIR }} \
+        -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} \
+        -DCMAKE_TOOLCHAIN_FILE=$QT_ROOT_DIR/lib/cmake/Qt6/qt.toolchain.cmake \
+        -DQT_CHAINLOAD_TOOLCHAIN_FILE=$EMSDK/upstream/emscripten/cmake/Modules/Platform/Emscripten.cmake
+
+        cmake --build ${{ env.BUILD_DIR }} --parallel
+
+    - name: Prepare WebAssembly output
+      run: |
+        mkdir site
+
+        # Copy files from your app build
+        cp ${{ env.BUILD_DIR }}/${{ env.APP_NAME }}.wasm site/
+        cp ${{ env.BUILD_DIR }}/${{ env.APP_NAME }}.html site/
+        cp ${{ env.BUILD_DIR }}/${{ env.APP_NAME }}.js site/
+
+        # List Qt WebAssembly files (for debugging)
+        find "${{ env.QT_ROOT_DIR }}" -name "*.js"
+
+        # Copy Qt WebAssembly runtime files
+        cp "${{ env.QT_ROOT_DIR }}/plugins/platforms/qtloader.js" site/
+        # Optional: other runtime JS files if needed
+        cp "${{ env.QT_ROOT_DIR }}/libexec/qwasmjsruntime.js" site/ || true
+        cp "${{ env.QT_ROOT_DIR }}/libexec/emrunadapter.js" site/ || true
+
+        # Optional: add an index.html if Qt does not generate one
+        if [ ! -f site/index.html ]; then
+          echo "<meta http-equiv='refresh' content='0; URL=${{ env.APP_NAME }}.html'>" > site/index.html
+        fi
+
+    - name: Upload site artifact
+      uses: actions/upload-pages-artifact@v4
+      with:
+        path: site
+
+    - name: Deploy 🚀
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        folder: site
