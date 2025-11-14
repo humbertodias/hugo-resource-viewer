@@ -9,8 +9,19 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets Multimedia)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Multimedia)
+# Detect if building for Emscripten (WebAssembly)
+if(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    set(QT_WASM_BUILD TRUE)
+else()
+    set(QT_WASM_BUILD FALSE)
+endif()
+
+# Find Qt packages conditionally
+if(QT_WASM_BUILD)
+    find_package(Qt6 REQUIRED COMPONENTS Widgets)
+else()
+    find_package(Qt6 REQUIRED COMPONENTS Widgets Multimedia)
+endif()
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
@@ -70,7 +81,12 @@ else()
     endif()
 endif()
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Multimedia)
+# Link libraries conditionally
+if(QT_WASM_BUILD)
+    target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
+else()
+    target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Multimedia)
+endif()
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
 # If you are developing for iOS or macOS you should consider setting an
