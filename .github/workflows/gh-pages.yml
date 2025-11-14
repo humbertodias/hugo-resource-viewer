@@ -12,7 +12,7 @@ permissions:
 
 env:
   APP_NAME: "hugo-resource-viewer"
-  QT_VERSION: "5.15.19"
+  QT_VERSION: "6.9.0"
   EMSCRIPTEN_VERSION: "3.1.70"
   BUILD_DIR: "build"
   BUILD_TYPE: "Release"
