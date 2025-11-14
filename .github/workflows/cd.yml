@@ -7,7 +7,11 @@ on:
 
 permissions:
   contents: write
-        
+
+env:
+  QT_VERSION: "6.9.0"
+  BUILD_TYPE: "Release"
+
 jobs:
   linux:
     runs-on: ${{ matrix.runner }}
@@ -33,8 +37,8 @@ jobs:
 
       - name: Build
         run: |
-          cmake -B build -DCMAKE_BUILD_TYPE=Release -G Ninja -DCPACK_GENERATOR=TGZ
-          cmake --build build --target package
+          cmake -B build -DCMAKE_BUILD_TYPE=${{ env.BUILD_TYPE }} -G Ninja -DCPACK_GENERATOR=TGZ
+          cmake --build build --target package --config ${{ env.BUILD_TYPE }}
           mv build/hugo-resource-viewer-*.tar.gz hugo-resource-viewer-${{ runner.os }}-${{ runner.arch }}.tar.gz
 
       - name: Create release
@@ -90,7 +94,7 @@ jobs:
      - name: Install Qt
        uses: jurplel/install-qt-action@v4
        with:
-         version: 6.4.2
+         version: ${{ env.QT_VERSION }}
          host: "windows"
          target: "desktop"
          modules: "qtmultimedia"

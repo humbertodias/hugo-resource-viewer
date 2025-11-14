@@ -23,7 +23,6 @@ if(QT_WASM_BUILD)
 else()
     find_package(QT NAMES Qt6 REQUIRED COMPONENTS Widgets Multimedia)
     find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets Multimedia)
-
 endif()
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
