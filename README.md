@@ -19,6 +19,10 @@ Ubuntu/Debian
 ```bash
 sudo apt install cmake ninja-build flex bison autoconf-archive
 ```
+## Clone
+```bash
+git clone --recurse-submodules https://github.com/humbertodias/hugo-resource-viewer.git
+```
 
 ## Build
 ```bash
